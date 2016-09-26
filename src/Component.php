@@ -6,7 +6,6 @@ use BootPress\Database\Component as Database;
 
 class Component extends Database
 {
-
     /** @var object A BootPress\SQLite\Fts instance. */
     public $fts;
 
@@ -58,9 +57,9 @@ class Component extends Database
     /**
      * This will either create an SQLite table if it has not already been created, or verify that everything matches the sqlite_master table index. If something has changed then the table is altered accordingly.
      * 
-     * @param string $table  The database table name.
-     * @param array  $fields An ``array($name => $type, ...)`` of fields that define this table.
-     * @param mixed  $index  A string of 'comma-separated field names' to index. If you are creating multiple indexes, then make this an ``array('comma-separated field names', ... )`` of all the indexes you would like to create. If it is a unique index, then make an ``array('unique' => comma-separated field names', ...)``.
+     * @param string $table   The database table name.
+     * @param array  $fields  An ``array($name => $type, ...)`` of fields that define this table.
+     * @param mixed  $index   A string of 'comma-separated field names' to index. If you are creating multiple indexes, then make this an ``array('comma-separated field names', ... )`` of all the indexes you would like to create. If it is a unique index, then make an ``array('unique' => comma-separated field names', ...)``.
      * @param array  $changes When changing field names, make an ``array($old => $new, ...)`` to map the old field name with the new field name so that all of the data is updated accordingly. You can change the field order and type no problem, but if you change field names and don't map them we send the old (missing) field name to the scrapheap, and every new field name row will receive it's default value.
      * 
      * @return bool False if nothing has changed, and the table is exactly as you would like it. True if the table has been newly created or updated in any way.

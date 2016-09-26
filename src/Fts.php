@@ -4,10 +4,9 @@ namespace BootPress\SQLite;
 
 class Fts
 {
-    
     /** @var object A BootPress\SQLite\Component instance. */
     private $db;
-    
+
     /** @var bool Whether or not the SQL scalar function has been created. */
     private $rank;
 
@@ -65,7 +64,7 @@ class Fts
      * @param string $search The search term(s) to '**MATCH**'.
      * @param string $where  An additional string of restrictions you would like to place. If you don't include 'WHERE' we will add it for you. If you are combining tables to deliver results then put your 'INNER JOIN ... WHERE' clause here, and prefix the search $table and fields with 's.' eg. ``INNER JOIN my_table AS my ON s.docid = my.id WHERE my.field = ...``
      * 
-     * @return integer The total count.
+     * @return int The total count.
      *
      * ```php
      * echo $db->fts->count('results', 'fish')); // 2
@@ -236,7 +235,7 @@ class Fts
     /**
      * Ranks search results in order of relevance.  Used internally, and only made public because it has to be.
      * 
-     * @param string $info    
+     * @param string $info
      * @param string $weights
      * 
      * @return float A relevancy rank.  A larger value indicates a more relevant result.

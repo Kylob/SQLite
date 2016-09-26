@@ -14,7 +14,7 @@ class SqliteTest extends \PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         $request = Request::create('http://website.com/');
-        Page::html(array('dir' => __DIR__.'/page', 'suffix'=>'.html'), $request, 'overthrow');
+        Page::html(array('dir' => __DIR__.'/page', 'suffix' => '.html'), $request, 'overthrow');
         self::$db = new Sqlite();
     }
 
@@ -48,7 +48,7 @@ class SqliteTest extends \PHPUnit_Framework_TestCase
         rmdir(dirname($file));
         $this->assertFileNotExists($file);
     }
-    
+
     public function testCreateMethod()
     {
         $this->assertTrue(self::$db->created);
@@ -57,7 +57,7 @@ class SqliteTest extends \PHPUnit_Framework_TestCase
             'name' => 'TEXT COLLATE NOCASE',
             'position' => 'TEXT NOT NULL DEFAULT ""',
         );
-        $this->assertTrue(self::$db->create('employees', $fields, array('unique'=>'position')));
+        $this->assertTrue(self::$db->create('employees', $fields, array('unique' => 'position')));
         $fields['position'] = 'TEXT DEFAULT ""';
         $this->assertTrue(self::$db->create('employees', $fields, 'position'));
         $stmt = self::$db->insert('employees', array('id', 'name', 'position'));
@@ -69,10 +69,10 @@ class SqliteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(105, self::$db->insert($stmt, array(105, 'Rita Patel', null)));
         self::$db->close($stmt);
         $this->assertEquals(5, self::$db->log('count'));
-        
+
         // dbExecute() will catch a \LogicException and return false for a datatype mismatch eg. setting a primary key to null
         $this->assertFalse(self::$db->exec('UPDATE employees SET id = NULL WHERE id = 105'));
-        
+
         $this->assertEquals(6, count(self::$db->row('SELECT * FROM employees WHERE id = ?', 105, 'both')));
         $this->assertFalse(self::$db->create('employees', $fields, 'position'));
         $this->assertFalse(self::$db->create('employees', $fields)); // the index has changed, but not the employees table
@@ -81,12 +81,10 @@ class SqliteTest extends \PHPUnit_Framework_TestCase
             'name' => 'TEXT UNIQUE COLLATE NOCASE',
             'title' => 'TEXT DEFAULT ""',
         );
-        
+
         $this->assertTrue(self::$db->create('employees', $fields, 'title', array('position' => 'title')));
-        $this->assertEquals(1, self::$db->update('employees', 'id', array(104 => array('title'=>'Sales Manager'))));
-        $this->assertEquals(1, self::$db->update('employees', 'id', array(105 => array('title'=>'DBA'))));
-        
-        
+        $this->assertEquals(1, self::$db->update('employees', 'id', array(104 => array('title' => 'Sales Manager'))));
+        $this->assertEquals(1, self::$db->update('employees', 'id', array(105 => array('title' => 'DBA'))));
     }
 
     public function testSettingsMethod()
