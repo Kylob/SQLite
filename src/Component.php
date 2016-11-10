@@ -114,8 +114,8 @@ class Component extends Database
     /**
      * Use this method to create and retrieve database settings.
      * 
-     * @param string $setting The setting you want to either set or return.
-     * @param mixed  $value   The setting's value. If you want to remove the setting then set this (explicitly) to null.
+     * @param string $name  The setting you want to either set or return.
+     * @param mixed  $value The setting's value. If you want to remove the setting then set this (explicitly) to null.
      *
      * @return mixed An array of all the settings (if no parameters are given), or the setting's value (if no value is given).
      *
@@ -125,7 +125,7 @@ class Component extends Database
      * echo $db->settings('version'); // 1.2
      * ```
      */
-    public function settings($setting = null, $value = null)
+    public function settings($name = null, $value = null)
     {
         switch (func_num_args()) {
             case 0: // they want it all
@@ -136,16 +136,16 @@ class Component extends Database
                 break;
             case 2: // they want to establish a setting
                 $update = false;
-                list($setting, $value) = func_get_args();
-                $current = $this->info('settings', $setting);
+                list($name, $value) = func_get_args();
+                $current = $this->info('settings', $name);
                 if (is_null($value)) {
                     // then we don't want this in the database as "null" is the default value
                     if (!is_null($current)) {
-                        unset($this->info['settings'][$setting]);
+                        unset($this->info['settings'][$name]);
                         $update = true;
                     }
                 } elseif ($current !== $value) {
-                    $this->info['settings'][$setting] = $value;
+                    $this->info['settings'][$name] = $value;
                     $update = true;
                 }
                 if ($update) {
@@ -154,6 +154,7 @@ class Component extends Database
                 break;
         }
     }
+
 
     /**
      * When you overwhelm an SQLite database with inserts and updates, there's a chance it may become corrupted.  When it does, I've been able to recreate it using this method.
