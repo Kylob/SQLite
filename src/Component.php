@@ -16,9 +16,9 @@ class Component extends Database
     private $info = array();
 
     /**
-     * Connects to an SQLite database file, and creates one if it doesn't already exist.
+     * Connects to an SQLite database **$file**, and creates one if it doesn't already exist.
      *
-     * @param string $file The SQLite database file location, or just leave it null to create an SQLite database in ':memory:'
+     * @param string $file The SQLite database file location, or just leave it ``null`` to create an SQLite database in *':memory:'*.
      */
     public function __construct($file = null)
     {
@@ -55,25 +55,27 @@ class Component extends Database
     }
 
     /**
-     * This will either create an SQLite table if it has not already been created, or verify that everything matches the sqlite_master table index. If something has changed then the table is altered accordingly.
-     * 
+     * Either create an SQLite **$table** if it has not already been created, or verify that it matches the sqlite_master table index. If something has changed, then the **$table** will be altered accordingly.
+     *
      * @param string $table   The database table name.
-     * @param array  $fields  An ``array($name => $type, ...)`` of fields that define this table.
-     * @param mixed  $index   A string of 'comma-separated field names' to index. If you are creating multiple indexes, then make this an ``array('comma-separated field names', ... )`` of all the indexes you would like to create. If it is a unique index, then make an ``array('unique' => comma-separated field names', ...)``.
-     * @param array  $changes When changing field names, make an ``array($old => $new, ...)`` to map the old field name with the new field name so that all of the data is updated accordingly. You can change the field order and type no problem, but if you change field names and don't map them we send the old (missing) field name to the scrapheap, and every new field name row will receive it's default value.
-     * 
-     * @return bool False if nothing has changed, and the table is exactly as you would like it. True if the table has been newly created or updated in any way.
+     * @param array  $fields  An ``array($name => $type, ...)`` of fields that define this **$table**.
+     * @param mixed  $index   A string of comma-separated '**field, name, ...**'s to index. If you are creating multiple indexes, then make this an ``array('field', 'name', ... )`` of all the indexes you would like to create. If it is a unique index, then make it an ``array('unique' => 'field, name, ...')``.
+     * @param array  $changes When changing field names, make an ``array($old => $new, ...)`` to map the old field name with the new field name, so that all of the data is updated accordingly. You can change the **$fields** order and type no problem, but if you change field names and don't map them, we'll send the old (missing) field name to the scrapheap, and every new field name will receive it's default value.
+     *
+     * @return bool Either ``false`` if nothing has changed and the **$table** is exactly as you would like it, or ``true`` if the **$table** has been newly created or updated in any way.
+     *
+     * @example
      *
      * ```php
      * if ($db->created) {
-     *      
+     *
      *     $db->create('employees', array(
      *         'id' => 'INTEGER PRIMARY KEY',
      *         'name' => 'TEXT COLLATE NOCASE',
      *         'position' => 'TEXT NOT NULL DEFAULT ""',
      *     ), array('unique'=>'position'));
-     * 
-     *     // Wait, I just changed my mind:
+     *
+     *     // Wait, I just changed my mind
      *     $db->create('employees', array(
      *         'id' => 'INTEGER PRIMARY KEY',
      *         'name' => 'TEXT UNIQUE COLLATE NOCASE',
@@ -81,7 +83,7 @@ class Component extends Database
      *     ), 'title', array(
      *         'position' => 'title',
      *     ));
-     * 
+     *
      * }
      * ```
      */
@@ -112,16 +114,18 @@ class Component extends Database
     }
 
     /**
-     * Use this method to create and retrieve database settings.
-     * 
-     * @param string $name  The setting you want to either set or return.
-     * @param mixed  $value The setting's value. If you want to remove the setting then set this (explicitly) to null.
+     * Create and retrieve database settings.
+     *
+     * @param string $name  What you want to either set or return.
+     * @param mixed  $value The setting's value. If you want to remove the setting, then set this explicitly to ``null``.
      *
      * @return mixed An array of all the settings (if no parameters are given), or the setting's value (if no value is given).
      *
+     * @example
+     *
      * ```php
      * $db->settings('version', '1.2');
-     * 
+     *
      * echo $db->settings('version'); // 1.2
      * ```
      */
@@ -155,11 +159,42 @@ class Component extends Database
         }
     }
 
+    /**
+     * Returns the ``$field . 'IN(' . implode(',', $ids) . ')'``, in the same order given.  This method is patterned after using MySQL's [FIELD()](http://dba.stackexchange.com/questions/109120/how-does-order-by-field-in-mysql-work-internally) function, which unfortunately is unavailable in SQLite.
+     *
+     * @param string $field Database column.
+     * @param array  $ids   Those passed to the IN() clause.
+     *
+     * @return string An SQL string to put at the end of your query.
+     *
+     * @example
+     *
+     * ```php
+     * if ($ids = $db->ids('SELECT id FROM employees ORDER BY name ASC')) {
+     *     foreach ($db->all(array(
+     *         'SELECT name, title FROM employees',
+     *         'WHERE '.$db->inOrder('id', $ids),
+     *     )) as $row) {
+     *         list($name, $title) = $row;
+     *     }
+     * }
+     * ```
+     */
+    public function inOrder($field, array $ids)
+    {
+        $sql = $field.' IN('.implode(',', $ids).') ORDER BY CASE '.$field;
+        foreach (array_values($ids) as $num => $id) {
+            $sql .= ' WHEN '.$id.' THEN '.$num;
+        }
+        $sql .= ' ELSE NULL END ASC';
+
+        return $sql;
+    }
 
     /**
-     * When you overwhelm an SQLite database with inserts and updates, there's a chance it may become corrupted.  When it does, I've been able to recreate it using this method.
-     * 
-     * @param string $file The NEW SQLite database file location.  The one you want to create.
+     * When you overwhelm an SQLite database with overlapping inserts and updates, there's a chance it may become corrupted.  If it does, I've been able to recreate it using this method.
+     *
+     * @param string $file The **NEW** SQLite database file location.  The one you want to create.
      */
     public function recreate($file)
     {
@@ -207,38 +242,6 @@ class Component extends Database
             $db->connection()->exec($sql);
         }
         $db->connection()->close();
-    }
-
-    /**
-     * Orders the results of a query in the same order as those passed to the IN() clause.  This method is patterned after MySQL's FIELD() function.  DO NOT USE!  This may be yanked or changed without notice.  I'm considering prepending the "$field IN(...)", and changing the name to ``$this->IN()`` as well.  Why not?
-     * Get an SQL string that returns the columns with the field ids in the order given.
-     * Returns the ``$field``'s ``$ids`` in the order given.
-     * 
-     * @param string $field Database column.
-     * @param array  $ids   Those passed to the IN() clause.
-     * 
-     * @return string An SQL string to put at the end of your query.
-     *
-     * ```php
-     * if ($ids = $db->ids('SELECT id FROM employees ORDER BY name ASC')) {
-     *     foreach ($db->all(array(
-     *         'SELECT name, title FROM employees',
-     *         'WHERE '.$db->inOrder('id', $ids),
-     *     )) as $row) {
-     *         list($name, $title) = $row;
-     *     }
-     * }
-     * ```
-     */
-    public function inOrder($field, array $ids)
-    {
-        $sql = $field.' IN('.implode(',', $ids).') ORDER BY CASE '.$field;
-        foreach (array_values($ids) as $num => $id) {
-            $sql .= ' WHEN '.$id.' THEN '.$num;
-        }
-        $sql .= ' ELSE NULL END ASC';
-
-        return $sql;
     }
 
     private function alter($table, array $fields, array $changes, $columns)
