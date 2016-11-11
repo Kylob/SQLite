@@ -17,12 +17,14 @@ class Fts
 
     /**
      * Create an SQLite FTS4 virtual table for fulltext searching.
-     * 
+     *
      * @param string $table    The database table name.
-     * @param mixed  $fields   An ``array($field, ...)`` of names to create, or just a string 'search' (for example) if there is only one field name.
-     * @param string $tokenize Either 'simple', or 'porter' (the default)
-     * 
-     * @return bool False if the table has already been created, or True if the table has been created anew.
+     * @param mixed  $fields   An ``array($field, ...)`` of names to create, or just a string (eg. '**search**') if there is only one field name.
+     * @param string $tokenize Either '**simple**', or '**porter**' (the default).
+     *
+     * @return bool Either ``false`` if the table has already been created, or ``true`` if the table has been created anew.
+     *
+     * @example
      *
      * ```php
      * if ($db->created) {
@@ -59,15 +61,17 @@ class Fts
 
     /**
      * Get the total number of search results.
-     * 
+     *
      * @param string $table  The database table name.
      * @param string $search The search term(s) to '**MATCH**'.
-     * @param string $where  An additional string of restrictions you would like to place. If you don't include 'WHERE' we will add it for you. If you are combining tables to deliver results then put your 'INNER JOIN ... WHERE' clause here, and prefix the search $table and fields with 's.' eg. ``INNER JOIN my_table AS my ON s.docid = my.id WHERE my.field = ...``
-     * 
+     * @param string $where  An additional string of restrictions you would like to place. If you don't include '**WHERE**' we will add it for you. If you are combining tables to deliver results then put your '**INNER JOIN ... WHERE**' clause here, and prefix the search **$table** and fields with '**s.**' eg. ``INNER JOIN my_table AS my ON s.docid = my.id WHERE my.field = ...``
+     *
      * @return int The total count.
      *
+     * @example
+     *
      * ```php
-     * echo $db->fts->count('results', 'fish')); // 2
+     * echo $db->fts->count('results', 'fish'); // 2
      * ```
      */
     public function count($table, $search, $where = '')
@@ -82,16 +86,18 @@ class Fts
     }
 
     /**
-     * Queries an FTS $table for the relevant $search word(s) found within.
-     * 
+     * Queries an FTS **$table** for the relevant **$search** word(s) found within.
+     *
      * @param string $table   The database table name.
      * @param string $search  The search term(s) to '**MATCH**'.
-     * @param mixed  $limit   If you are not paginating results and only want the top whatever, then this is an integer. Otherwise it is an SQL LIMIT clause.
-     * @param string $where   An additional string of restrictions you would like to place. If you don't include 'WHERE' we will add it for you. If you are combining tables to deliver results then put your 'INNER JOIN ... WHERE' clause here, and prefix the search $table and fields with 's.' eg. ``INNER JOIN my_table AS my ON s.docid = my.id WHERE my.field = ...``
+     * @param mixed  $limit   If you are not paginating results and only want the top whatever, then this is an integer. Otherwise it is an SQL '<b> LIMIT offset, length</b>' clause.
+     * @param string $where   An additional string of restrictions you would like to place. If you don't include '**WHERE**' we will add it for you. If you are combining tables to deliver results then put your '**INNER JOIN ... WHERE**' clause here, and prefix the search **$table** and fields with '**s.**' eg. ``INNER JOIN my_table AS my ON s.docid = my.id WHERE my.field = ...``
      * @param array  $fields  An ``array('s.field', ...)`` of additional fields you would like to include in the search results. Remember to specify the table prefixes if needed.
-     * @param array  $weights An array of importance that you would like to place on the $table fields searched in whatever order you placed them originally. The default weights are 1 for each field, meaning they are all of equal importance. If you want to make one field more relevant than another, then make this an ``array($weight, ...)`` of importance to place on each corresponding $table field. Even if you place an importance of 0 on a field it will still be included among the search results, it will just have a lower rank (possibly 0). All of this assumes you have more than one field in your $table, otherwise this will make no difference whatsoever.
-     * 
+     * @param array  $weights An array of importance that you would like to place on the **$table** fields searched in whatever order you placed them originally. The default weights are 1 for each field, meaning they are all of equal importance. If you want to make one field more relevant than another, then make this an ``array($weight, ...)`` of importance to place on each corresponding **$table** field. Even if you place an importance of 0 on a field it will still be included among the search results, it will just have a lower rank (possibly 0). All of this assumes you have more than one field in your **$table**, otherwise this will make no difference whatsoever.
+     *
      * @return array An associative array of results.
+     *
+     * @example
      *
      * ```php
      * var_export($db->fts->search('results', 'fish'));
@@ -166,13 +172,15 @@ class Fts
     }
 
     /**
-     * Get the words that made your $search relevant for $docid.
-     * 
+     * Get the words that made your **$search** relevant for **$docid**.
+     *
      * @param string $table  The database table name.
      * @param string $search The search term(s) to '**MATCH**'.
-     * @param mixed  $docid  The $table row's docid.
-     * 
-     * @return array The unique words found which made the $search relevant.
+     * @param mixed  $docid  The **$table** row's docid.
+     *
+     * @return array The unique words found which made the **$search** relevant.
+     *
+     * @example
      *
      * ```php
      * echo implode(', ', $db->fts->words('results', 'fish', 101)); // fishes, fish
@@ -192,12 +200,14 @@ class Fts
     }
 
     /**
-     * Sorts through the space-separated search offset integers, and retrieves the words they reference.
-     * 
-     * @param array $row    An associative array of each fields value, and an 'offsets' key.
+     * Sorts through the **$row['offsets']** integers, and retrieves the words they reference.
+     *
+     * @param array $row    An associative array of each **$fields** value, including an '**offsets**' key.
      * @param array $fields An array of field names in the same order as they are found in the database search table.
-     * 
-     * @return array The searched words that made this row relevant.
+     *
+     * @return array The words that made this row relevant.
+     *
+     * @example
      *
      * ```php
      * print_r($db->fts->offset(array(
