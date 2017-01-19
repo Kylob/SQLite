@@ -2,6 +2,7 @@
     "name": "bootpress/sqlite",
     "description": "Extends the BootPress Database Component to create and update tables and indexes at will, and simplifies FTS full-text searching.",
     "keywords": ["bootpress", "sqlite", "sqlite3", "fts", "database"],
+    "homepage": "https://www.bootpress.org/components/sqlite.html",
     "license": "MIT",
     "authors": [
         {
