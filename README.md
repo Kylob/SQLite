@@ -65,7 +65,7 @@ if ($db->created) {
 
 echo $db->settings('version'); // 1.0
 
-echo $db->fts->count('results', 'fish')); // 2
+echo $db->fts->count('results', 'fish'); // 2
 
 print_r($db->fts->search('results', 'fish'));
 /*
