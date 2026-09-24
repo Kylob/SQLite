@@ -54,6 +54,10 @@ class Component extends Database
         $this->fts = new Fts($this);
     }
 
+	public function __destruct () {
+		$this->connection()->close();
+	}
+
     /**
      * Either create an SQLite **$table** if it has not already been created, or verify that it matches the sqlite_master table index. If something has changed, then the **$table** will be altered accordingly.
      *
@@ -293,8 +297,9 @@ class Component extends Database
             foreach ((array) $columns as $key => $indexes) {
                 $unique = (!is_int($key) && strtolower($key) == 'unique') ? ' UNIQUE ' : ' ';
                 $indexes = array_map('trim', explode(',', $indexes));
-                $name = $table.'_'.implode('_', $indexes);
-                $sql = "CREATE{$unique}INDEX {$name} ON {$table} (".implode(', ', $indexes).')';
+                $name = implode('_', $indexes);
+				$indexes = implode(', ', $indexes);
+                $sql = "CREATE{$unique}INDEX {$name} ON {$table} ({$indexes})";
                 $queries[$name] = $sql;
                 if (!isset($outdated[$name]) || $outdated[$name] != $sql) {
                     if (isset($outdated[$name])) {
